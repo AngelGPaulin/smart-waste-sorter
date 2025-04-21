@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRos - Página Principal</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
+
+    .notification-popup {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 50px;
+  width: 280px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 150;
+}
+
+.notification-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background-color: #e6ecfb;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar img {
+      width: 200px;
+      display: block;
+      margin: 0 auto 40px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #000;
+      font-weight: bold;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #d5defa;
+    }
+
+    .nav-links, .bottom-links {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bottom-links {
+      margin-top: 60px;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      border-bottom: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+
+    .topbar input[type="text"] {
+      width: 300px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .user-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+    }
+
+    .username {
+      margin-right: 4px;
+    }
+
+    .user-options {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      min-width: 180px;
+      z-index: 200;
+    }
+
+    .user-options a {
+      display: block;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-options a:hover {
+      background-color: #f2f2f2;
+    }
+
+    .user-options a:last-child {
+      border-bottom: none;
+    }
+
+    .main {
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+    }
+
+    /* CARRUSEL MODERNO */
+    .hero-wrapper {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  height: 600px; /* Aumentado de 480px a 600px */
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #f9f9f9;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  transition: transform 0.4s ease;
+}
+
+
+    .hero-track {
+      display: flex;
+      height: 100%;
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .hero-slide {
+      flex: 0 0 100%;
+      height: 100%;
+    }
+
+    .hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  transition: transform 0.4s ease;
+}
+
+    .hero-slide img:hover {
+      transform: scale(1.02);
+    }
+
+    /* FLECHAS */
+    .hero-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      background-color: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.3s ease;
+    }
+
+    .hero-arrow:hover {
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-arrow.left { left: 12px; }
+    .hero-arrow.right { right: 12px; }
+    
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-links">
+      <img src="../assets/QroS-1.png" alt="Logo QRos">
+      <a href="PrincipalPage.html"><i data-lucide="home"></i> Página principal</a>
+      <a href="Locations.html"><i data-lucide="map-pin"></i> Ubicaciones</a>
+      <a href="Analytics.html"><i data-lucide="line-chart"></i> Analítica</a>
+      <a href="Container.html"><i data-lucide="trash-2"></i> Contenedores</a>
+      <a href="Routes.html"><i data-lucide="route"></i> Rutas</a>
+      <a href="Guide.html"><i data-lucide="book-open"></i> Guía</a>
+    </div>
+    <div class="bottom-links">
+      <a href="Help.html"><i data-lucide="help-circle"></i> Ayuda</a>
+      <a href="Configurations.html"><i data-lucide="settings"></i> Configuración</a>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <input type="text" placeholder="Buscar..." />
+      <div class="top-right">
+        <button class="notif-btn" id="notifToggle" title="Notificaciones"><i data-lucide="bell"></i></button>
+        <div class="notification-popup" id="notificationPopup">
+          <div class="notification-item">✅ Iniciaste sesión correctamente</div>
+          <div class="notification-item">📢 Nueva actualización disponible</div>
+          <div class="notification-item">📦 3 contenedores nuevos registrados</div>
+        </div>
+        <div class="user-wrapper">
+          <div class="user-info" id="toggleUserOptions">
+            <i data-lucide="user"></i>
+            <span class="username">Usuario82823</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="user-options" id="userOptions">
+            <a href="Login.html">Cerrar sesión</a>
+            <a href="Term.html">Términos y Condiciones</a>
+            <a href="Profile.html">Mi perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <h1>Bienvenid@!!</h1>
+
+      <div class="hero-wrapper">
+        <div class="hero-track" id="heroTrack">
+          <div class="hero-slide"><img src="../assets/Noticia1.png" alt="Noticia 1" /></div>
+          <div class="hero-slide"><img src="../assets/Noticia2.png" alt="Noticia 2" /></div>
+          <div class="hero-slide"><img src="../assets/Noticia3.png" alt="Noticia 3" /></div>
+        </div>
+        <button class="hero-arrow left" onclick="prevHero()">←</button>
+        <button class="hero-arrow right" onclick="nextHero()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    lucide.createIcons();
+
+    const toggleUser = document.getElementById("toggleUserOptions");
+    const userMenu = document.getElementById("userOptions");
+
+    toggleUser.addEventListener("click", () => {
+      userMenu.style.display = userMenu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!toggleUser.contains(e.target) && !userMenu.contains(e.target)) {
+        userMenu.style.display = "none";
+      }
+    });
+
+    // CARRUSEL FUNCIONAL + AUTOPLAY
+    let currentHero = 0;
+    const heroTrack = document.getElementById("heroTrack");
+    const totalSlides = document.querySelectorAll(".hero-slide").length;
+
+    function updateHeroSlider() {
+      heroTrack.style.transform = `translateX(-${currentHero * 100}%)`;
+    }
+
+    function prevHero() {
+      currentHero = (currentHero - 1 + totalSlides) % totalSlides;
+      updateHeroSlider();
+    }
+
+    function nextHero() {
+      currentHero = (currentHero + 1) % totalSlides;
+      updateHeroSlider();
+    }
+
+    setInterval(nextHero, 5000); // autoplay cada 5 segundos
+    // POPUP DE NOTIFICACIONES
+const notifToggle = document.getElementById("notifToggle");
+const notifPopup = document.getElementById("notificationPopup");
+
+notifToggle.addEventListener("click", () => {
+  notifPopup.style.display = notifPopup.style.display === "block" ? "none" : "block";
+});
+
+document.addEventListener("click", (e) => {
+  if (!notifToggle.contains(e.target) && !notifPopup.contains(e.target)) {
+    notifPopup.style.display = "none";
+  }
+});
+
+  </script>
+</body>
+</html>

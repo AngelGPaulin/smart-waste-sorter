@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  ia-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ia-flask-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - D:/Imagenes_IA:/app/Imagenes_IA
+    restart: unless-stopped

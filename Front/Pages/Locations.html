@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRos - Ubicaciones</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.3.0/ol.css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background-color: #e6ecfb;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar img {
+      width: 200px;
+      display: block;
+      margin: 0 auto 40px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #000;
+      font-weight: bold;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #d5defa;
+    }
+
+    .nav-links, .bottom-links {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bottom-links {
+      margin-top: 60px;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      border-bottom: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+
+    .topbar input[type="text"] {
+      width: 300px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: #ff4757;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notification-popup {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      width: 300px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 150;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f9f9f9;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .notification-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+      color: #333;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item:hover {
+      background-color: #f5f9ff;
+      cursor: pointer;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .notification-icon {
+      font-size: 1.1rem;
+      margin-top: 2px;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-footer {
+      padding: 10px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      font-size: 0.85rem;
+    }
+
+    .notification-footer a {
+      color: #4a89dc;
+      text-decoration: none;
+    }
+
+    .user-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+    }
+
+    .username {
+      margin-right: 4px;
+    }
+
+    .user-options {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      min-width: 180px;
+      z-index: 200;
+    }
+
+    .user-options a {
+      display: block;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-options a:hover {
+      background-color: #f2f2f2;
+    }
+
+    .user-options a:last-child {
+      border-bottom: none;
+    }
+
+    .main {
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #104410;
+      margin-bottom: 20px;
+    }
+
+    .location-card {
+      border-bottom: 1px solid #ccc;
+      padding: 12px 0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .location-card:hover {
+      background-color: #f5f5f5;
+    }
+
+    .location-card.selected {
+      background-color: #e6f7ff;
+      border-left: 3px solid #1890ff;
+      padding-left: 10px;
+    }
+
+    .location-card h3 {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .location-card .icons {
+      margin-top: 4px;
+    }
+
+    .location-card .icons span {
+      margin-right: 6px;
+      font-size: 1.2rem;
+    }
+
+    .location-card .icons span.green { color: green; }
+    .location-card .icons span.red { color: red; }
+    .location-card .icons span.blue { color: blue; }
+    .location-card .icons span.yellow { color: goldenrod; }
+    .location-card .icons span.purple { color: purple; }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    .actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .actions button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .actions button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .actions .add-btn {
+      background-color: #7d8fe7;
+      color: white;
+    }
+
+    .actions .delete-btn {
+      background-color: #ff4d4f;
+      color: white;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
+      margin-top: 30px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    /* Modal para agregar nueva ubicación */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 500px;
+      max-width: 90%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      color: #104410;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .form-actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .cancel-btn {
+      background-color: #f5f5f5;
+    }
+
+    .submit-btn {
+      background-color: #7d8fe7;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-links">
+      <img src="../assets/QroS-1.png" alt="Logo QRos">
+      <a href="PrincipalPage.html"><i data-lucide="home"></i> Página principal</a>
+      <a href="Locations.html"><i data-lucide="map-pin"></i> Ubicaciones</a>
+      <a href="Analytics.html"><i data-lucide="line-chart"></i> Analítica</a>
+      <a href="Container.html"><i data-lucide="trash-2"></i> Contenedores</a>
+      <a href="Routes.html"><i data-lucide="route"></i> Rutas</a>
+      <a href="Guide.html"><i data-lucide="book-open"></i> Guía</a>
+    </div>
+    <div class="bottom-links">
+      <a href="Help.html"><i data-lucide="help-circle"></i> Ayuda</a>
+      <a href="Configurations.html"><i data-lucide="settings"></i> Configuración</a>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <input type="text" placeholder="Buscar..." />
+      <div class="top-right">
+        <button class="notif-btn" id="notifToggle" title="Notificaciones">
+          <i data-lucide="bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+        <div class="notification-popup" id="notificationPopup">
+          <div class="notification-header">
+            <span>Notificaciones</span>
+            <span style="font-size: 0.8rem; color: #666;">3 nuevas</span>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">✅</span>
+            <div class="notification-content">
+              <div>Iniciaste sesión correctamente</div>
+              <div class="notification-time">Hace 2 horas</div>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">📢</span>
+            <div class="notification-content">
+              <div>Nueva actualización disponible</div>
+              <div class="notification-time">Hace 1 día</div>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">📦</span>
+            <div class="notification-content">
+              <div>Nuevos contenedores registrados</div>
+              <div class="notification-time">Hace 2 días</div>
+            </div>
+          </div>
+          <div class="notification-footer">
+            <a href="#">Ver todas las notificaciones</a>
+          </div>
+        </div>
+        <div class="user-wrapper">
+          <div class="user-info" id="toggleUserOptions">
+            <i data-lucide="user"></i>
+            <span class="username">Usuario82823</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="user-options" id="userOptions">
+            <a href="Login.html">Cerrar sesión</a>
+            <a href="Term.html">Términos y Condiciones</a>
+            <a href="Profile.html">Mi perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+      <h1>Ubicaciones</h1>
+
+      <div id="locations-container">
+        <div class="location-card" data-id="1">
+          <h3>📍 76267 Saldarriaga, Qro...</h3>
+          <p>28 Marzo 2025</p>
+          <div class="icons">
+            <span class="green">●</span>
+            <span class="yellow">●</span>
+            <span class="blue">●</span>
+            <span class="purple">●</span>
+          </div>
+        </div>
+
+        <div class="location-card" data-id="2">
+          <h3>📍 76267 Hacienda Cerro Gordo...</h3>
+          <p>26 Marzo 2025</p>
+          <div class="icons">
+            <span class="green">●</span>
+            <span class="blue">●</span>
+            <span class="yellow">●</span>
+          </div>
+        </div>
+
+        <div class="location-card" data-id="3">
+          <h3>📍 76267 Hacienda de Los Arados</h3>
+          <p>26 Marzo 2025</p>
+          <div class="icons">
+            <span class="red">●</span>
+            <span class="yellow">●</span>
+            <span class="green">●</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="add-btn" id="addLocationBtn">Agregar</button>
+        <button class="delete-btn" id="deleteLocationBtn">Eliminar</button>
+      </div>
+
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- Modal para agregar nueva ubicación -->
+  <div class="modal" id="addLocationModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Agregar Nueva Ubicación</h2>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+      <form id="locationForm">
+        <div class="form-group">
+          <label for="locationName">Nombre de la ubicación</label>
+          <input type="text" id="locationName" required>
+        </div>
+        <div class="form-group">
+          <label for="locationAddress">Dirección</label>
+          <input type="text" id="locationAddress" required>
+        </div>
+        <div class="form-group">
+          <label for="locationDate">Fecha</label>
+          <input type="date" id="locationDate" required>
+        </div>
+        <div class="form-group">
+          <label for="locationTypes">Tipos de residuos</label>
+          <select id="locationTypes" multiple>
+            <option value="green">Orgánico</option>
+            <option value="blue">Papel/Cartón</option>
+            <option value="yellow">Plástico</option>
+            <option value="red">Peligroso</option>
+            <option value="purple">Electrónicos</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" id="cancelAddBtn">Cancelar</button>
+          <button type="submit" class="submit-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Variables globales
+    let selectedLocationId = null;
+    const locationsData = [
+      { id: 1, name: "76267 Saldarriaga, Qro...", date: "28 Marzo 2025", types: ["green", "yellow", "blue", "purple"], coords: [-100.3851, 20.7099] },
+      { id: 2, name: "76267 Hacienda Cerro Gordo...", date: "26 Marzo 2025", types: ["green", "blue", "yellow"], coords: [-100.3700, 20.7150] },
+      { id: 3, name: "76267 Hacienda de Los Arados", date: "26 Marzo 2025", types: ["red", "yellow", "green"], coords: [-100.3950, 20.7000] }
+    ];
+
+    // Menú de usuario
+    const toggleUser = document.getElementById("toggleUserOptions");
+    const userMenu = document.getElementById("userOptions");
+    toggleUser.addEventListener("click", () => {
+      userMenu.style.display = userMenu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!toggleUser.contains(e.target) && !userMenu.contains(e.target)) {
+        userMenu.style.display = "none";
+      }
+    });
+
+    // Notificaciones
+    const notifToggle = document.getElementById("notifToggle");
+    const notifPopup = document.getElementById("notificationPopup");
+
+    notifToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      notifPopup.style.display = notifPopup.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notifToggle.contains(e.target) && !notifPopup.contains(e.target)) {
+        notifPopup.style.display = "none";
+      }
+    });
+
+    // Mapa
+    const map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
+        })
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-100.3851, 20.7099]),
+        zoom: 13
+      })
+    });
+
+    // Capa para marcadores
+    const vectorLayer = new ol.layer.Vector({
+      source: new ol.source.Vector()
+    });
+    map.addLayer(vectorLayer);
+
+    // Agregar marcadores existentes
+    locationsData.forEach(loc => {
+      addMarkerToMap(loc);
+    });
+
+    // Selección de ubicaciones
+    const locationCards = document.querySelectorAll('.location-card');
+    locationCards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Remover selección previa
+        document.querySelectorAll('.location-card').forEach(c => {
+          c.classList.remove('selected');
+        });
+        
+        // Agregar selección actual
+        this.classList.add('selected');
+        selectedLocationId = parseInt(this.getAttribute('data-id'));
+        
+        // Centrar mapa en la ubicación seleccionada
+        const selectedLoc = locationsData.find(l => l.id === selectedLocationId);
+        if (selectedLoc) {
+          map.getView().setCenter(ol.proj.fromLonLat(selectedLoc.coords));
+          map.getView().setZoom(15);
+        }
+      });
+    });
+
+    // Botón Agregar
+    const addLocationBtn = document.getElementById("addLocationBtn");
+    const addLocationModal = document.getElementById("addLocationModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const cancelAddBtn = document.getElementById("cancelAddBtn");
+    const locationForm = document.getElementById("locationForm");
+
+    addLocationBtn.addEventListener('click', () => {
+      addLocationModal.style.display = 'flex';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      addLocationModal.style.display = 'none';
+    });
+
+    cancelAddBtn.addEventListener('click', () => {
+      addLocationModal.style.display = 'none';
+    });
+
+    // Formulario para agregar nueva ubicación
+    locationForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Obtener valores del formulario
+      const name = document.getElementById("locationName").value;
+      const address = document.getElementById("locationAddress").value;
+      const date = document.getElementById("locationDate").value;
+      const types = Array.from(document.getElementById("locationTypes").selectedOptions)
+                        .map(option => option.value);
+      
+      // Crear nueva ubicación
+      const newId = locationsData.length > 0 ? Math.max(...locationsData.map(l => l.id)) + 1 : 1;
+      const formattedDate = formatDate(new Date(date));
+      
+      // Coordenadas aleatorias cerca del centro actual (para demo)
+      const center = map.getView().getCenter();
+      const centerLonLat = ol.proj.toLonLat(center);
+      const newCoords = [
+        centerLonLat[0] + (Math.random() * 0.02 - 0.01),
+        centerLonLat[1] + (Math.random() * 0.02 - 0.01)
+      ];
+      
+      const newLocation = {
+        id: newId,
+        name: `📍 ${address}`,
+        date: formattedDate,
+        types: types,
+        coords: newCoords
+      };
+      
+      // Agregar a los datos
+      locationsData.push(newLocation);
+      
+      // Agregar al DOM
+      addLocationToDOM(newLocation);
+      
+      // Agregar marcador al mapa
+      addMarkerToMap(newLocation);
+      
+      // Mostrar notificación
+      showNotification(`✅ Ubicación "${address}" agregada correctamente`);
+      
+      // Cerrar modal y resetear formulario
+      addLocationModal.style.display = 'none';
+      locationForm.reset();
+    });
+
+    // Botón Eliminar
+    const deleteLocationBtn = document.getElementById("deleteLocationBtn");
+    deleteLocationBtn.addEventListener('click', () => {
+      if (!selectedLocationId) {
+        alert('Por favor selecciona una ubicación para eliminar');
+        return;
+      }
+      
+      if (confirm('¿Estás seguro de que quieres eliminar esta ubicación?')) {
+        // Eliminar de los datos
+        const index = locationsData.findIndex(l => l.id === selectedLocationId);
+        if (index !== -1) {
+          const deletedLocation = locationsData[index];
+          locationsData.splice(index, 1);
+          
+          // Eliminar del DOM
+          document.querySelector(`.location-card[data-id="${selectedLocationId}"]`).remove();
+          
+          // Eliminar marcador del mapa
+          removeMarkerFromMap(selectedLocationId);
+          
+          // Mostrar notificación
+          showNotification(`🗑️ Ubicación "${deletedLocation.name}" eliminada`);
+          
+          // Resetear selección
+          selectedLocationId = null;
+        }
+      }
+    });
+
+    // Función para agregar marcador al mapa
+    function addMarkerToMap(location) {
+      const marker = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat(location.coords)),
+        id: location.id
+      });
+      
+      vectorLayer.getSource().addFeature(marker);
+    }
+
+    // Función para eliminar marcador del mapa
+    function removeMarkerFromMap(locationId) {
+      const source = vectorLayer.getSource();
+      const feature = source.getFeatures().find(f => f.get('id') === locationId);
+      if (feature) {
+        source.removeFeature(feature);
+      }
+    }
+
+    // Función para agregar ubicación al DOM
+    function addLocationToDOM(location) {
+      const icons = {
+        green: '●',
+        yellow: '●',
+        blue: '●',
+        red: '●',
+        purple: '●'
+      };
+      
+      const iconsHtml = location.types.map(type => 
+        `<span class="${type}">${icons[type]}</span>`
+      ).join('');
+      
+      const locationCard = document.createElement('div');
+      locationCard.className = 'location-card';
+      locationCard.setAttribute('data-id', location.id);
+      locationCard.innerHTML = `
+        <h3>${location.name}</h3>
+        <p>${location.date}</p>
+        <div class="icons">${iconsHtml}</div>
+      `;
+      
+      // Agregar evento click
+      locationCard.addEventListener('click', function() {
+        document.querySelectorAll('.location-card').forEach(c => {
+          c.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        selectedLocationId = location.id;
+        
+        // Centrar mapa en la ubicación
+        map.getView().setCenter(ol.proj.fromLonLat(location.coords));
+        map.getView().setZoom(15);
+      });
+      
+      document.getElementById('locations-container').appendChild(locationCard);
+    }
+
+    // Función para mostrar notificación
+    function showNotification(message) {
+      const notificationsContainer = document.querySelector('#notificationPopup .notification-item:first-child').parentNode;
+      const newNotification = document.createElement('div');
+      newNotification.className = 'notification-item';
+      newNotification.innerHTML = `
+        <span class="notification-icon">ℹ️</span>
+        <div class="notification-content">
+          <div>${message}</div>
+          <div class="notification-time">Justo ahora</div>
+        </div>
+      `;
+      
+      notificationsContainer.insertBefore(newNotification, notificationsContainer.firstChild.nextSibling);
+      
+      // Actualizar contador
+      const badge = document.querySelector('.notification-badge');
+      badge.textContent = parseInt(badge.textContent) + 1;
+      
+      const countElement = document.querySelector('#notificationPopup .notification-header span:last-child');
+      countElement.textContent = `${parseInt(countElement.textContent.split(' ')[0]) + 1} nuevas`;
+    }
+
+    // Función para formatear fecha
+    function formatDate(date) {
+      const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    // Evento click en el mapa para seleccionar ubicación
+    map.on('click', function(evt) {
+      const feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+        return feature;
+      });
+      
+      if (feature) {
+        const locationId = feature.get('id');
+        const locationCard = document.querySelector(`.location-card[data-id="${locationId}"]`);
+        if (locationCard) {
+          // Simular click en la tarjeta
+          locationCard.click();
+        }
+      }
+    });
+
+    // Cambiar cursor al pasar sobre marcadores
+    map.on('pointermove', function(e) {
+      const pixel = map.getEventPixel(e.originalEvent);
+      const hit = map.hasFeatureAtPixel(pixel);
+      map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+    });
+  </script>
+</body>
+</html>

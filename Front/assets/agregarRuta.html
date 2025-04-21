@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crear Rutas Personalizadas</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial;
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            background: #f0f0f0;
+            margin-bottom: 20px;
+        }
+        .route {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .route:hover {
+            background: #f5f5f5;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button#new-route {
+            background: #28a745;
+        }
+        button.delete {
+            background: #dc3545;
+        }
+        .controls {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crear Rutas Personalizadas</h1>
+    
+    <!-- Controles -->
+    <div class="controls">
+        <button id="new-route">Nueva Ruta</button>
+        <button id="clear">Limpiar</button>
+    </div>
+    
+    <!-- Mapa -->
+    <div id="map"></div>
+    
+    <!-- Lista de rutas -->
+    <h2>Tus Rutas</h2>
+    <div id="routes-list"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <script>
+        // 1. INICIALIZAR MAPA
+        const map = L.map('map').setView([20.5888, -100.3899], 13);
+        
+        // Capa base (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        // Variables para crear rutas
+        let creatingRoute = false;
+        let startPoint = null;
+        let endPoint = null;
+        let tempMarkers = [];
+        let tempLine = null;
+        let routes = [];
+        let routeCounter = 1;
+        
+        // 2. FUNCIÓN PARA CREAR NUEVA RUTA
+        document.getElementById('new-route').addEventListener('click', function() {
+            if (creatingRoute) {
+                alert('Ya estás creando una ruta. Termina la actual primero.');
+                return;
+            }
+            
+            creatingRoute = true;
+            startPoint = null;
+            endPoint = null;
+            clearTempItems();
+            
+            alert('Haz clic en el mapa para marcar el INICIO de la ruta');
+            
+            // Cambiar el cursor del mapa
+            map.getContainer().style.cursor = 'crosshair';
+        });
+        
+        // 3. MANEJAR CLICS EN EL MAPA
+        map.on('click', function(e) {
+            if (!creatingRoute) return;
+            
+            if (!startPoint) {
+                // Marcar punto de inicio
+                startPoint = e.latlng;
+                tempMarkers.push(L.marker(startPoint, {
+                    icon: L.divIcon({
+                        className: 'start-icon',
+                        html: '🟢',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map));
+                
+                alert('Ahora haz clic para marcar el FINAL de la ruta');
+            } else if (!endPoint) {
+                // Marcar punto final
+                endPoint = e.latlng;
+                tempMarkers.push(L.marker(endPoint, {
+                    icon: L.divIcon({
+                        className: 'end-icon',
+                        html: '🔴',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map));
+                
+                // Dibujar línea entre los puntos
+                tempLine = L.polyline([startPoint, endPoint], {
+                    color: 'blue',
+                    weight: 5
+                }).addTo(map);
+                
+                // Preguntar por el nombre de la ruta
+                const routeName = prompt('Ingresa un nombre para esta ruta:', 'Ruta ' + routeCounter);
+                
+                if (routeName) {
+                    // Guardar la nueva ruta
+                    const newRoute = {
+                        id: 'route-' + Date.now(),
+                        name: routeName,
+                        date: new Date().toLocaleDateString('es-ES', { 
+                            day: 'numeric', month: 'long', year: 'numeric' 
+                        }),
+                        points: [startPoint, endPoint],
+                        color: getRandomColor()
+                    };
+                    
+                    routes.push(newRoute);
+                    routeCounter++;
+                    
+                    // Mostrar en la lista
+                    addRouteToList(newRoute);
+                    
+                    // Mostrar la ruta creada
+                    showRoute(newRoute.id);
+                }
+                
+                // Resetear para nueva ruta
+                creatingRoute = false;
+                clearTempItems();
+                map.getContainer().style.cursor = '';
+            }
+        });
+        
+        // 4. FUNCIÓN PARA MOSTRAR RUTA
+        function showRoute(routeId) {
+            const route = routes.find(r => r.id === routeId);
+            if (!route) return;
+            
+            // Limpiar mapa (excepto capa base)
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) return;
+                map.removeLayer(layer);
+            });
+            
+            // Dibujar la ruta seleccionada
+            L.polyline(route.points, {
+                color: route.color,
+                weight: 5
+            }).addTo(map);
+            
+            // Añadir marcadores
+            L.marker(route.points[0], {
+                icon: L.divIcon({
+                    className: 'start-icon',
+                    html: '🟢',
+                    iconSize: [24, 24]
+                })
+            }).addTo(map);
+            
+            L.marker(route.points[1], {
+                icon: L.divIcon({
+                    className: 'end-icon',
+                    html: '🔴',
+                    iconSize: [24, 24]
+                })
+            }).addTo(map);
+            
+            // Ajustar vista
+            map.fitBounds(L.latLngBounds(route.points));
+        }
+        
+        // 5. FUNCIÓN PARA AÑADIR RUTA A LA LISTA
+        function addRouteToList(route) {
+            const routeElement = document.createElement('div');
+            routeElement.className = 'route';
+            routeElement.dataset.id = route.id;
+            routeElement.innerHTML = `
+                <strong>${route.name}</strong>
+                <span>${route.date}</span>
+                <button class="delete" data-id="${route.id}">Eliminar</button>
+            `;
+            
+            routeElement.addEventListener('click', function() {
+                showRoute(route.id);
+            });
+            
+            document.getElementById('routes-list').appendChild(routeElement);
+            
+            // Evento para botón eliminar
+            routeElement.querySelector('.delete').addEventListener('click', function(e) {
+                e.stopPropagation(); // Evitar que el clic se propague al elemento de ruta
+                deleteRoute(route.id);
+            });
+        }
+        
+        // 6. FUNCIÓN PARA ELIMINAR RUTA
+        function deleteRoute(routeId) {
+            if (confirm('¿Estás seguro de eliminar esta ruta?')) {
+                // Eliminar de la lista
+                routes = routes.filter(r => r.id !== routeId);
+                
+                // Eliminar del DOM
+                const element = document.querySelector(`.route[data-id="${routeId}"]`);
+                if (element) {
+                    element.remove();
+                }
+                
+                // Limpiar mapa si se estaba mostrando esta ruta
+                map.eachLayer(layer => {
+                    if (layer instanceof L.TileLayer) return;
+                    map.removeLayer(layer);
+                });
+            }
+        }
+        
+        // 7. FUNCIÓN PARA LIMPIAR TEMPORALES
+        function clearTempItems() {
+            if (tempLine) map.removeLayer(tempLine);
+            tempMarkers.forEach(marker => map.removeLayer(marker));
+            tempMarkers = [];
+            tempLine = null;
+        }
+        
+        // 8. BOTÓN LIMPIAR
+        document.getElementById('clear').addEventListener('click', function() {
+            creatingRoute = false;
+            clearTempItems();
+            map.getContainer().style.cursor = '';
+            
+            // Limpiar mapa (excepto capa base)
+            map.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) return;
+                map.removeLayer(layer);
+            });
+        });
+        
+        // 9. FUNCIÓN AUXILIAR PARA COLOR ALEATORIO
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    </script>
+</body>
+</html>

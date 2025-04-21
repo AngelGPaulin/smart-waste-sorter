@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRos - Rutas</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 240px;
+      background-color: #e6ecfb;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar img {
+      width: 200px;
+      display: block;
+      margin: 0 auto 40px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #000;
+      font-weight: bold;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #d5defa;
+    }
+
+    .nav-links, .bottom-links {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bottom-links {
+      margin-top: 60px;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      border-bottom: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+
+    .topbar input[type="text"] {
+      width: 300px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: #ff4757;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notification-popup {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      width: 300px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 150;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f9f9f9;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .notification-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+      color: #333;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item:hover {
+      background-color: #f5f9ff;
+      cursor: pointer;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .notification-icon {
+      font-size: 1.1rem;
+      margin-top: 2px;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-footer {
+      padding: 10px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      font-size: 0.85rem;
+    }
+
+    .notification-footer a {
+      color: #4a89dc;
+      text-decoration: none;
+    }
+
+    .user-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+    }
+
+    .user-options {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      min-width: 180px;
+      z-index: 200;
+    }
+
+    .user-options a {
+      display: block;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-options a:hover {
+      background-color: #f2f2f2;
+    }
+
+    .main {
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+
+    .rutas-container {
+      display: flex;
+      gap: 40px;
+    }
+
+    .rutas-lista {
+      flex: 1;
+    }
+
+    .rutas-lista h3 {
+      margin-bottom: 20px;
+    }
+
+    .ruta-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+
+    .ruta-item i {
+      color: red;
+      margin-right: 8px;
+    }
+
+    .ruta-item strong {
+      display: block;
+    }
+
+    .acciones {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .acciones button {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-eliminar {
+      background-color: #ccc;
+    }
+
+    .btn-agregar {
+      background-color: #6b85e0;
+      color: white;
+    }
+
+    #map-rutas {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-links">
+      <img src="../assets/QroS-1.png" alt="QRos Logo">
+      <a href="PrincipalPage.html"><i data-lucide="home"></i> Página principal</a>
+      <a href="Locations.html"><i data-lucide="map-pin"></i> Ubicaciones</a>
+      <a href="Analytics.html"><i data-lucide="line-chart"></i> Analítica</a>
+      <a href="Container.html"><i data-lucide="trash-2"></i> Contenedores</a>
+      <a href="Routes.html"><i data-lucide="route"></i> Rutas</a>
+      <a href="Guide.html"><i data-lucide="book-open"></i> Guía</a>
+    </div>
+    <div class="bottom-links">
+      <a href="Help.html"><i data-lucide="help-circle"></i> Ayuda</a>
+      <a href="Configurations.html"><i data-lucide="settings"></i> Configuración</a>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="content">
+    <div class="topbar">
+      <input type="text" placeholder="Buscar..." />
+      <div class="top-right">
+        <button class="notif-btn" id="notifToggle" title="Notificaciones">
+          <i data-lucide="bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+        <div class="notification-popup" id="notificationPopup">
+          <div class="notification-header">
+            <span>Notificaciones</span>
+            <span style="font-size: 0.8rem; color: #666;">3 nuevas</span>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">✅</span>
+            <div class="notification-content">
+              <div>Iniciaste sesión correctamente</div>
+              <div class="notification-time">Hace 2 horas</div>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">📢</span>
+            <div class="notification-content">
+              <div>Nueva actualización disponible</div>
+              <div class="notification-time">Hace 1 día</div>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">📦</span>
+            <div class="notification-content">
+              <div>3 contenedores nuevos registrados</div>
+              <div class="notification-time">Hace 2 días</div>
+            </div>
+          </div>
+          <div class="notification-footer">
+            <a href="#">Ver todas las notificaciones</a>
+          </div>
+        </div>
+        <div class="user-wrapper">
+          <div class="user-info" id="toggleUserOptions">
+            <i data-lucide="user"></i>
+            <span class="username">Usuario82823</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="user-options" id="userOptions">
+            <a href="Login.html">Cerrar sesión</a>
+            <a href="Term.html">Términos y Condiciones</a>
+            <a href="Profile.html">Mi perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <h1>Rutas</h1>
+
+      <div class="rutas-container">
+        <div class="rutas-lista">
+          <h3>Rutas existentes</h3>
+          <div class="ruta-item">
+            <i data-lucide="map-pin"></i>
+            <strong>Ruta Marqués 1</strong>
+            <span>26 Marzo 2025</span>
+          </div>
+          <div class="ruta-item">
+            <i data-lucide="map-pin"></i>
+            <strong>Ruta Aeropuerto</strong>
+            <span>26 Marzo 2025</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NUEVO MAPA INTERACTIVO -->
+      <h2>Crear nueva ruta</h2>
+      <div class="acciones">
+        <button id="new-route">Nueva Ruta</button>
+        <button id="clear">Limpiar</button>
+      </div>
+      <div id="map-rutas"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    lucide.createIcons();
+
+    const toggleUser = document.getElementById("toggleUserOptions");
+    const userMenu = document.getElementById("userOptions");
+
+    toggleUser.addEventListener("click", () => {
+      userMenu.style.display = userMenu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!toggleUser.contains(e.target) && !userMenu.contains(e.target)) {
+        userMenu.style.display = "none";
+      }
+    });
+
+    // Notificaciones
+    const notifToggle = document.getElementById("notifToggle");
+    const notificationPopup = document.getElementById("notificationPopup");
+
+    notifToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      notificationPopup.style.display = notificationPopup.style.display === "block" ? "none" : "block";
+      userMenu.style.display = "none"; // Cierra menú usuario si está abierto
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!notifToggle.contains(e.target) && !notificationPopup.contains(e.target)) {
+        notificationPopup.style.display = "none";
+      }
+    });
+
+    // Cerrar notificaciones al hacer clic en una
+    document.querySelectorAll('.notification-item').forEach(item => {
+      item.addEventListener('click', () => {
+        notificationPopup.style.display = "none";
+        // Aquí podrías marcar como leída, etc.
+      });
+    });
+
+    // Mapa Leaflet
+    const map = L.map('map-rutas').setView([20.5888, -100.3899], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let creatingRoute = false;
+    let startPoint = null;
+    let endPoint = null;
+    let tempMarkers = [];
+    let tempLine = null;
+
+    document.getElementById('new-route').addEventListener('click', () => {
+      if (creatingRoute) {
+        alert('Ya estás creando una ruta.');
+        return;
+      }
+      creatingRoute = true;
+      startPoint = null;
+      endPoint = null;
+      clearTempItems();
+      alert('Haz clic en el mapa para seleccionar el punto de inicio.');
+      map.getContainer().style.cursor = 'crosshair';
+    });
+
+    map.on('click', function(e) {
+      if (!creatingRoute) return;
+
+      if (!startPoint) {
+        startPoint = e.latlng;
+        tempMarkers.push(L.marker(startPoint, {
+          icon: L.divIcon({ className: 'start-icon', html: '🟢', iconSize: [24, 24] })
+        }).addTo(map));
+        alert('Ahora haz clic para marcar el punto final.');
+      } else {
+        endPoint = e.latlng;
+        tempMarkers.push(L.marker(endPoint, {
+          icon: L.divIcon({ className: 'end-icon', html: '🔴', iconSize: [24, 24] })
+        }).addTo(map));
+
+        tempLine = L.polyline([startPoint, endPoint], { color: 'blue', weight: 5 }).addTo(map);
+
+        const routeName = prompt('Nombre de la ruta:', 'Nueva Ruta');
+        if (routeName) {
+          alert('Ruta "' + routeName + '" creada.');
+        }
+
+        creatingRoute = false;
+        map.getContainer().style.cursor = '';
+      }
+    });
+
+    function clearTempItems() {
+      if (tempLine) map.removeLayer(tempLine);
+      tempMarkers.forEach(m => map.removeLayer(m));
+      tempMarkers = [];
+      tempLine = null;
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      creatingRoute = false;
+      clearTempItems();
+      map.getContainer().style.cursor = '';
+    });
+  </script>
+</body>
+</html>

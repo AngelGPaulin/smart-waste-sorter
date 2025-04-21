@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRos - Iniciar sesión</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .logo {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+    }
+
+    .container {
+      border: 1px solid #d2e3d2;
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      margin: 0 20px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      color: black;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid black;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .note {
+      text-align: center;
+      font-size: 0.9em;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .forgot-password {
+      text-align: right;
+      font-size: 0.85em;
+      margin-bottom: 20px;
+    }
+
+    .forgot-password a {
+      color: #000;
+      text-decoration: none;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #8fa9e2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background-color: #6c87c3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="../assets/QroS-1.png" alt="QRos logo" width="300">
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <a class="tab" href="Registro.html">Registro</a>
+      <a class="tab active" href="Login.html">Iniciar sesión</a>
+    </div>
+
+    <h2>Iniciar sesión</h2>
+    <p class="note" style="color: rgba(255, 0, 0, 0.6);">*Todos los datos son obligatorios</p>
+
+
+    <form onsubmit="login(event)">
+        <label for="email">Correo electrónico*</label>
+        <input type="email" id="email" required>
+      
+        <label for="password">Contraseña*</label>
+        <input type="password" id="password" required>
+      
+        <div class="forgot-password">
+          <a href="RPassword.html">¿Olvidaste tu contraseña?</a>
+        </div>
+      
+        <button type="submit">Entrar</button>
+      </form>
+      
+      <script>
+        function login(e) {
+          e.preventDefault();
+          
+          // Simulación de credenciales válidas
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+      
+          if (email && password) {
+            // Aquí puedes validar contra datos reales o localStorage si quieres.
+            window.location.href = "PrincipalPage.html"; // Redirigir a la página principal
+          } else {
+            alert("Credenciales inválidas.");
+          }
+        }
+      </script>
+      
+  </div>
+
+</body>
+</html>

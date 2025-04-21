@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ubicaciones</title>
+  <!-- CSS de OpenLayers - IMPORTANTE: URL correcta -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.3.0/ol.css">
+  <style>
+    /* Estilos mínimos necesarios */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #map {
+      width: 100%;
+      height: 300px; /* ALTURA ESENCIAL para que el mapa se vea */
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    .location-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ubicaciones</h1>
+  
+  <!-- El mapa necesita un contenedor con altura definida -->
+  <div id="map"></div>
+  
+  <h2>Ubicaciones recientes</h2>
+  <div id="locations-list">
+    <div class="location-item">
+      <div>76267 Saldanriaga, Qro...</div>
+      <small>28 Marzo 2025</small>
+    </div>
+    <div class="location-item">
+      <div>76267 Condominio Hacienda Cerro Gordo...</div>
+      <small>26 Marzo 2025</small>
+    </div>
+  </div>
+  
+  <button id="add-btn">Agregar</button>
+
+  <!-- JavaScript de OpenLayers - Versión específica para mayor estabilidad -->
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
+  <script>
+    // 1. INICIALIZAR EL MAPA (esto debe funcionar siempre)
+    const map = new ol.Map({
+      target: 'map', // ID del elemento contenedor
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM() // Capa base de OpenStreetMap
+        })
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-100.3899, 20.5888]), // Coordenadas Querétaro
+        zoom: 13 // Nivel de zoom
+      })
+    });
+
+    // 2. FUNCIÓN PARA AÑADIR UBICACIÓN (súper simple)
+    document.getElementById('add-btn').addEventListener('click', function() {
+      const locationName = prompt("Nombre de la nueva ubicación:");
+      if (locationName) {
+        // Crear nueva ubicación
+        const newLocation = document.createElement('div');
+        newLocation.className = 'location-item';
+        newLocation.innerHTML = `
+          <div>${locationName}</div>
+          <small>${new Date().toLocaleDateString('es-MX')}</small>
+        `;
+        
+        // Añadir a la lista
+        document.getElementById('locations-list').prepend(newLocation);
+        
+        // Mostrar mensaje de éxito
+        alert("Ubicación agregada: " + locationName);
+        
+        // Opcional: Añadir marcador al mapa (coordenadas aleatorias cercanas)
+        const newMarker = new ol.Feature({
+          geometry: new ol.geom.Point(
+            ol.proj.fromLonLat([
+              -100.3899 + (Math.random() * 0.02 - 0.01),
+              20.5888 + (Math.random() * 0.02 - 0.01)
+            ])
+          )
+        });
+        
+        const markerLayer = new ol.layer.Vector({
+          source: new ol.source.Vector({
+            features: [newMarker]
+          })
+        });
+        
+        map.addLayer(markerLayer);
+      }
+    });
+  </script>
+</body>
+</html>

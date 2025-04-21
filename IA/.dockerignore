@@ -1,0 +1,6 @@
+fruit&vegetables/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+static/uploads/

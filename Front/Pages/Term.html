@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QRos - Términos y Condiciones</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 240px;
+      background-color: #e6ecfb;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .sidebar img {
+      width: 200px;
+      display: block;
+      margin: 0 auto 40px;
+    }
+
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      text-decoration: none;
+      color: #000;
+      font-weight: bold;
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar a:hover {
+      background-color: #d5defa;
+    }
+
+    .nav-links, .bottom-links {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bottom-links {
+      margin-top: 60px;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      border-bottom: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+
+    .topbar input[type="text"] {
+      width: 300px;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    /* Estilos corregidos para notificaciones */
+    .notif-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    .notif-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: #ff4757;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .notification-popup {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      width: 320px;
+      max-height: 400px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 150;
+      overflow: hidden;
+    }
+
+    .notification-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f9f9f9;
+    }
+
+    .notification-count {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .notification-body {
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    .notification-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+      color: #333;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item:hover {
+      background-color: #f5f9ff;
+    }
+
+    .notification-icon {
+      font-size: 1.1rem;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .notification-footer {
+      padding: 10px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      font-size: 0.85rem;
+      background-color: #f9f9f9;
+    }
+
+    .notification-footer a {
+      color: #4a89dc;
+      text-decoration: none;
+    }
+
+    .user-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .user-options {
+      display: none;
+      position: absolute;
+      top: 120%;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      min-width: 180px;
+      z-index: 200;
+    }
+
+    .user-options a {
+      display: block;
+      padding: 10px 16px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      border-bottom: 1px solid #eee;
+    }
+
+    .user-options a:hover {
+      background-color: #f2f2f2;
+    }
+
+    .main {
+      padding: 40px 60px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.4rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-top: 30px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    ul {
+      margin: 10px 0 20px 20px;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-links">
+      <img src="../assets/QroS-1.png" alt="QRos Logo">
+      <a href="PrincipalPage.html"><i data-lucide="home"></i> Página principal</a>
+      <a href="Locations.html"><i data-lucide="map-pin"></i> Ubicaciones</a>
+      <a href="Analytics.html"><i data-lucide="line-chart"></i> Analítica</a>
+      <a href="Container.html"><i data-lucide="trash-2"></i> Contenedores</a>
+      <a href="Routes.html"><i data-lucide="route"></i> Rutas</a>
+      <a href="Guide.html"><i data-lucide="book-open"></i> Guía</a>
+    </div>
+    <div class="bottom-links">
+      <a href="Help.html"><i data-lucide="help-circle"></i> Ayuda</a>
+      <a href="Configurations.html"><i data-lucide="settings"></i> Configuración</a>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <input type="text" placeholder="Buscar..." />
+      <div class="top-right">
+        <button class="notif-btn" id="notifToggle" title="Notificaciones">
+          <i data-lucide="bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+        <div class="notification-popup" id="notificationPopup">
+          <div class="notification-header">
+            <span>Notificaciones</span>
+            <span class="notification-count">3 nuevas</span>
+          </div>
+          <div class="notification-body">
+            <div class="notification-item">
+              <span class="notification-icon">✅</span>
+              <div class="notification-content">
+                <div>Iniciaste sesión correctamente</div>
+                <div class="notification-time">Hace 2 horas</div>
+              </div>
+            </div>
+            <div class="notification-item">
+              <span class="notification-icon">📢</span>
+              <div class="notification-content">
+                <div>Nueva actualización disponible</div>
+                <div class="notification-time">Hace 1 día</div>
+              </div>
+            </div>
+            <div class="notification-item">
+              <span class="notification-icon">📦</span>
+              <div class="notification-content">
+                <div>3 contenedores nuevos registrados</div>
+                <div class="notification-time">Hace 2 días</div>
+              </div>
+            </div>
+          </div>
+          <div class="notification-footer">
+            <a href="#">Ver todas las notificaciones</a>
+          </div>
+        </div>
+        <div class="user-wrapper">
+          <div class="user-info" id="toggleUserOptions">
+            <i data-lucide="user"></i>
+            <span>Usuario82823</span>
+            <i data-lucide="chevron-down"></i>
+          </div>
+          <div class="user-options" id="userOptions">
+            <a href="Login.html">Cerrar sesión</a>
+            <a href="Term.html">Términos y Condiciones</a>
+            <a href="Profile.html">Mi perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <h1>Términos y Condiciones</h1>
+
+      <h2>1. Registro y Cuentas de Usuario</h2>
+      <h3>1.1. Requisitos de Registro</h3>
+      <ul>
+        <li>Solo pueden registrarse empresas de reciclaje legalmente constituidas y con permisos vigentes en Querétaro.</li>
+        <li>Se debe proporcionar información veraz y actualizada, incluyendo razón social, dirección, contacto y tipo de servicios ofrecidos.</li>
+      </ul>
+      <h3>1.2. Responsabilidad del Usuario</h3>
+      <ul>
+        <li>Cada empresa es responsable de mantener la confidencialidad de su cuenta y contraseña.</li>
+        <li>En caso de actividad sospechosa, se debe notificar de inmediato a la administración de la plataforma.</li>
+      </ul>
+
+      <h2>2. Uso de la Plataforma</h2>
+      <h3>2.1. Servicios Permitidos</h3>
+      <ul>
+        <li>Ofrecer recolección y procesamiento de residuos.</li>
+        <li>Publicar información sobre reciclaje y buenas prácticas.</li>
+        <li>Recibir solicitudes de ciudadanos o negocios interesados en servicios de reciclaje.</li>
+      </ul>
+      <h3>2.2. Prohibiciones</h3>
+      <ul>
+        <li>Publicar información falsa o engañosa sobre los servicios.</li>
+        <li>Realizar prácticas fraudulentas o publicidad engañosa.</li>
+        <li>Ofrecer servicios ilegales o sin permisos ambientales correspondientes.</li>
+      </ul>
+
+      <h2>3. Privacidad y Protección de Datos</h2>
+      <h3>3.1. Uso de Datos Personales</h3>
+      <ul>
+        <li>La plataforma recopila datos como nombre de empresa, dirección, contacto y tipo de servicios ofrecidos.</li>
+        <li>Estos datos solo se utilizan para conectar empresas con clientes y mejorar el servicio.</li>
+      </ul>
+      <h3>3.2. Compartición de Información</h3>
+      <ul>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Menú de usuario
+    const toggleUser = document.getElementById("toggleUserOptions");
+    const userMenu = document.getElementById("userOptions");
+
+    toggleUser.addEventListener("click", () => {
+      userMenu.style.display = userMenu.style.display === "block" ? "none" : "block";
+      // Cerrar notificaciones si están abiertas
+      notificationPopup.style.display = "none";
+    });
+    
+    document.addEventListener("click", (e) => {
+      if (!toggleUser.contains(e.target) && !userMenu.contains(e.target)) {
+        userMenu.style.display = "none";
+      }
+    });
+
+    // Notificaciones
+    const notifToggle = document.getElementById("notifToggle");
+    const notificationPopup = document.getElementById("notificationPopup");
+    
+    notifToggle.addEventListener("click", (e) => {
+      e.stopPropagation(); // Evitar que el clic se propague
+      notificationPopup.style.display = notificationPopup.style.display === "block" ? "none" : "block";
+      
+      // Cerrar menú usuario si está abierto
+      userMenu.style.display = "none";
+    });
+    
+    // Cerrar notificaciones al hacer clic fuera
+    document.addEventListener("click", (e) => {
+      if (!notifToggle.contains(e.target) && !notificationPopup.contains(e.target)) {
+        notificationPopup.style.display = "none";
+      }
+    });
+    
+    // Cerrar notificaciones al hacer clic en una notificación
+    document.querySelectorAll('.notification-item').forEach(item => {
+      item.addEventListener('click', () => {
+        notificationPopup.style.display = "none";
+        // Aquí podrías añadir lógica para marcar como leída, etc.
+      });
+    });
+
+    // Actualizar badge de notificaciones cuando se marcan como leídas
+    function markNotificationsAsRead() {
+      const badge = document.querySelector('.notification-badge');
+      badge.textContent = '0';
+      badge.style.backgroundColor = '#888';
+      
+      const countElement = document.querySelector('.notification-count');
+      countElement.textContent = '0 nuevas';
+    }
+
+    // Ejemplo: Marcar como leídas después de 3 segundos de abrir el popup
+    notifToggle.addEventListener('click', () => {
+      if (notificationPopup.style.display === 'block') {
+        setTimeout(markNotificationsAsRead, 3000);
+      }
+    });
+  </script>
+</body>
+</html>
