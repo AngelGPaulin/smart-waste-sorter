@@ -9,6 +9,7 @@ import { BinWasteTypeModule } from "./bin-waste-type/bin-waste-type.module";
 import { CollectionModule } from "./collection/collection.module";
 import { ConfigModule } from "@nestjs/config";
 import { TreatmentPointModule } from './treatment-point/treatment-point.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -36,6 +37,7 @@ import { TreatmentPointModule } from './treatment-point/treatment-point.module';
     BinWasteTypeModule,
     CollectionModule,
     TreatmentPointModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

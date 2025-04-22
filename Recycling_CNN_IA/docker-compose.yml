@@ -10,5 +10,5 @@ services:
       - "5000:5000"
     volumes:
       - .:/app
-      - D:/Imagenes_IA:/app/Imagenes_IA
+      - /mnt/d/Imagenes_IA:/app/Imagenes_IA
     restart: unless-stopped

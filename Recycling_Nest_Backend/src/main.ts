@@ -1,20 +1,26 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import * as dotenv from 'dotenv';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  dotenv.config(); 
+  dotenv.config();
 
   const app = await NestFactory.create(AppModule);
-
+  app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
+
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
 
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Accept',
+    Credentials: true,
   });
 
   const config = new DocumentBuilder()
