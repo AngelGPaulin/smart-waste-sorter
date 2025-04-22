@@ -10,6 +10,8 @@ import { CollectionModule } from "./collection/collection.module";
 import { ConfigModule } from "@nestjs/config";
 import { TreatmentPointModule } from './treatment-point/treatment-point.module';
 import { AuthModule } from './auth/auth.module';
+import { Feedback } from "./feedback/entities/feedback.entity";
+import { FeedbackModule } from "./feedback/feedback.module";
 
 
 @Module({
@@ -38,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
     CollectionModule,
     TreatmentPointModule,
     AuthModule,
+    FeedbackModule
   ],
 })
 export class AppModule {}
