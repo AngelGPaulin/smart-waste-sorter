@@ -9,7 +9,7 @@ export default async function HomePage() {
   if (token) {
     redirect("/dashboard");
   } else {
-    redirect("/auth/login");
+    redirect("/login");
   }
 
   return null;
