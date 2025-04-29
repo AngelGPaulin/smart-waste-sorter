@@ -6,9 +6,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: ${user}
-      POSTGRES_PASSWORD: ${pass}
-      POSTGRES_DB: ${name}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME=reciclaje_app_DB}
     container_name: reciclaje-app
     volumes:
       - ./postgres:/var/lib/postgresql/data
