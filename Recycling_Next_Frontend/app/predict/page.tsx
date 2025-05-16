@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +14,20 @@ export default function PredictPage() {
   const [selectedCorrectCategory, setSelectedCorrectCategory] = useState("");
   const [feedbackSent, setFeedbackSent] = useState<boolean | null>(null);
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => console.error("❌ Error accediendo a la cámara:", err));
+  }, []);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -25,8 +39,32 @@ export default function PredictPage() {
     }
   };
 
+  const captureFromWebcam = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], "webcam.jpg", { type: "image/jpeg" });
+        setImage(file);
+        setPreview(URL.createObjectURL(blob));
+        setPrediction("");
+        setShowCorrection(false);
+        setFeedbackSent(null);
+      }
+    }, "image/jpeg");
+  };
+
   const classifyImage = async () => {
-    if (!image) return;
+    if (!image) {
+      console.warn("⚠️ No se seleccionó ninguna imagen.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("image", image);
@@ -34,8 +72,8 @@ export default function PredictPage() {
     try {
       const res = await axios.post("http://localhost:5000/predict", formData);
       setPrediction(res.data.prediction);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("❌ Error al hacer la petición:", err);
       alert("❌ Error al clasificar la imagen");
     }
   };
@@ -60,7 +98,7 @@ export default function PredictPage() {
       });
 
       setFeedbackSent(true);
-      
+
       setTimeout(() => {
         setImage(null);
         setPreview("");

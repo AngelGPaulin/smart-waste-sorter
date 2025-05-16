@@ -7,3 +7,5 @@ scikit-learn
 matplotlib
 Pillow
 flask_cors
+pymodbus==2.5.3
+pyModbusTCP
