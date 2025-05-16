@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
 
@@ -11,6 +11,21 @@ export default function PredictPage() {
   const [showCorrection, setShowCorrection] = useState(false);
   const [selectedCorrectCategory, setSelectedCorrectCategory] = useState("");
   const [feedbackSent, setFeedbackSent] = useState<boolean | null>(null);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Habilitar cámara al montar el componente
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch((err) => console.error("❌ Error accediendo a la cámara:", err));
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -23,8 +38,32 @@ export default function PredictPage() {
     }
   };
 
+  const captureFromWebcam = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], "webcam.jpg", { type: "image/jpeg" });
+        setImage(file);
+        setPreview(URL.createObjectURL(blob));
+        setPrediction("");
+        setShowCorrection(false);
+        setFeedbackSent(null);
+      }
+    }, "image/jpeg");
+  };
+
   const classifyImage = async () => {
-    if (!image) return;
+    if (!image) {
+      console.warn("⚠️ No se seleccionó ninguna imagen.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("image", image);
@@ -32,8 +71,8 @@ export default function PredictPage() {
     try {
       const res = await axios.post("http://localhost:5000/predict", formData);
       setPrediction(res.data.prediction);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("❌ Error al hacer la petición:", err);
       alert("❌ Error al clasificar la imagen");
     }
   };
@@ -58,7 +97,6 @@ export default function PredictPage() {
       });
 
       alert("✅ ¡Gracias por tu retroalimentación!");
-
       setImage(null);
       setPreview("");
       setPrediction("");
@@ -72,15 +110,37 @@ export default function PredictPage() {
 
   return (
     <div className="min-h-screen bg-green-50 text-center p-8">
-      <h1 className="text-3xl font-bold text-green-800 mb-4 flex justify-center items-center gap-2">
+      <h1 className="text-3xl font-bold text-green-800 mb-4">
         ♻️ Clasificador Inteligente
       </h1>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="block mx-auto mb-4 file:bg-green-600 file:text-white file:rounded file:px-4 file:py-2"
+      <div className="flex flex-col items-center gap-4">
+        <video
+          ref={videoRef}
+          autoPlay
+          width={300}
+          height={225}
+          className="border rounded-lg shadow"
+        />
+        <button
+          onClick={captureFromWebcam}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
+        >
+          📷 Capturar desde webcam
+        </button>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="block mx-auto file:bg-green-600 file:text-white file:rounded file:px-4 file:py-2"
+        />
+      </div>
+
+      <canvas
+        ref={canvasRef}
+        width={150}
+        height={150}
+        style={{ display: "none" }}
       />
 
       {preview && (
@@ -89,7 +149,7 @@ export default function PredictPage() {
           alt="Vista previa"
           width={300}
           height={300}
-          className="mx-auto rounded-lg shadow-md"
+          className="mx-auto mt-4 rounded-lg shadow"
         />
       )}
 
@@ -162,18 +222,6 @@ export default function PredictPage() {
                   Enviar corrección
                 </button>
               </div>
-            )}
-
-            {feedbackSent !== null && (
-              <p
-                className={`mt-2 font-semibold ${
-                  feedbackSent ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {feedbackSent
-                  ? "✅ ¡Gracias por tu retroalimentación!"
-                  : "❌ Error al enviar el feedback"}
-              </p>
             )}
           </div>
         </div>
