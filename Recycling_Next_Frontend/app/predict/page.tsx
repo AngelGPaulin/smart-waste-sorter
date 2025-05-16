@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
+import Link from "next/link";
+import { FiArrowLeft, FiUpload, FiCheck, FiX, FiSend } from "react-icons/fi";
 
 export default function PredictPage() {
   const [image, setImage] = useState<File | null>(null);
@@ -15,7 +17,6 @@ export default function PredictPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Habilitar cámara al montar el componente
   useEffect(() => {
     navigator.mediaDevices
       .getUserMedia({ video: true })
@@ -96,136 +97,182 @@ export default function PredictPage() {
         correctedLabel,
       });
 
-      alert("✅ ¡Gracias por tu retroalimentación!");
-      setImage(null);
-      setPreview("");
-      setPrediction("");
-      setShowCorrection(false);
-      setSelectedCorrectCategory("");
+      setFeedbackSent(true);
+
+      setTimeout(() => {
+        setImage(null);
+        setPreview("");
+        setPrediction("");
+        setShowCorrection(false);
+        setSelectedCorrectCategory("");
+      }, 2000);
     } catch (err) {
       console.error(err);
-      alert("❌ Error al enviar feedback");
+      setFeedbackSent(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-green-50 text-center p-8">
-      <h1 className="text-3xl font-bold text-green-800 mb-4">
-        ♻️ Clasificador Inteligente
-      </h1>
-
-      <div className="flex flex-col items-center gap-4">
-        <video
-          ref={videoRef}
-          autoPlay
-          width={300}
-          height={225}
-          className="border rounded-lg shadow"
-        />
-        <button
-          onClick={captureFromWebcam}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow"
-        >
-          📷 Capturar desde webcam
-        </button>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="block mx-auto file:bg-green-600 file:text-white file:rounded file:px-4 file:py-2"
-        />
-      </div>
-
-      <canvas
-        ref={canvasRef}
-        width={150}
-        height={150}
-        style={{ display: "none" }}
-      />
-
-      {preview && (
-        <Image
-          src={preview}
-          alt="Vista previa"
-          width={300}
-          height={300}
-          className="mx-auto mt-4 rounded-lg shadow"
-        />
-      )}
-
-      <button
-        onClick={classifyImage}
-        className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow"
+    <div className="min-h-screen bg-white p-6">
+      {/* Botón de regreso */}
+      <Link 
+        href="/dashboard/home" 
+        className="flex items-center text-green-600 hover:text-green-800 mb-6 transition-colors group"
       >
-        Clasificar
-      </button>
+        <FiArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+        Volver al Panel
+      </Link>
 
-      {prediction && (
-        <div className="mt-6">
-          <p className="text-lg font-semibold text-green-700">
-            Predicción: <span className="font-bold">{prediction}</span>
-          </p>
-
-          <div className="flex flex-col items-center gap-4 mt-6">
-            <div className="flex gap-4">
-              <button
-                onClick={() =>
-                  sendFeedback({
-                    imageUrl: preview,
-                    predictedClass: prediction,
-                    correct: true,
-                  })
-                }
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow"
-              >
-                ✅ Adivinó bien
-              </button>
-
-              <button
-                onClick={() => setShowCorrection(true)}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow"
-              >
-                ❌ No es correcto
-              </button>
-            </div>
-
-            {showCorrection && (
-              <div className="flex flex-col gap-2 items-center">
-                <select
-                  onChange={(e) => setSelectedCorrectCategory(e.target.value)}
-                  className="border p-2 rounded w-60"
-                >
-                  <option value="">Selecciona la categoría correcta</option>
-                  <option value="plastic">Plástico</option>
-                  <option value="glass">Vidrio</option>
-                  <option value="metal">Metal</option>
-                  <option value="paper">Papel</option>
-                  <option value="organic">Orgánico</option>
-                  <option value="trash">Basura</option>
-                  <option value="electronic">Electrónico</option>
-                  <option value="tetrapak">Tetrapak</option>
-                  <option value="cardboard">Cartón</option>
-                  <option value="battery">Batería</option>
-                </select>
-
-                <button
-                  onClick={() =>
-                    sendFeedback({
-                      imageUrl: preview,
-                      predictedClass: prediction,
-                      correct: false,
-                      correctedLabel: selectedCorrectCategory,
-                    })
-                  }
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-                >
-                  Enviar corrección
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Contenedor principal */}
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        {/* Encabezado */}
+        <div className="bg-green-600 p-6 text-center">
+          <h1 className="text-3xl font-bold text-white mb-2 flex justify-center items-center gap-3">
+            ♻️ Clasificador Ecológico
+          </h1>
+          <p className="text-green-100">Sube una imagen para clasificar el tipo de material reciclable</p>
         </div>
-      )}
+
+        {/* Contenido */}
+        <div className="p-6">
+          {/* Uploader */}
+          <div className="mb-8">
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-green-300 rounded-lg cursor-pointer bg-green-50 hover:bg-green-100 transition-colors">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <FiUpload className="w-8 h-8 mb-3 text-green-600" />
+                <p className="mb-2 text-sm text-gray-700">
+                  <span className="font-semibold text-green-600">Haz clic para subir</span> o arrastra tu imagen
+                </p>
+                <p className="text-xs text-gray-500">Formatos: JPG, PNG (Max. 5MB)</p>
+              </div>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageChange} 
+                className="hidden" 
+              />
+            </label>
+          </div>
+
+          {/* Vista previa */}
+          {preview && (
+            <div className="mb-6 flex justify-center">
+              <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-green-200 shadow-sm">
+                <Image
+                  src={preview}
+                  alt="Vista previa"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Botón de clasificación */}
+          <button
+            onClick={classifyImage}
+            disabled={!preview}
+            className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all flex items-center justify-center gap-2 ${
+              preview 
+                ? "bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg" 
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            <FiCheck className="text-lg" />
+            Clasificar Imagen
+          </button>
+
+          {/* Resultados */}
+          {prediction && (
+            <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Resultado de Clasificación</h3>
+              
+              <div className="bg-white p-4 rounded border border-green-200 mb-6">
+                <p className="text-gray-600">El sistema ha identificado:</p>
+                <p className="text-2xl font-bold text-green-600 capitalize mt-1">{prediction}</p>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-gray-700 font-medium">¿Es correcta esta clasificación?</p>
+                
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <button
+                    onClick={() =>
+                      sendFeedback({
+                        imageUrl: preview,
+                        predictedClass: prediction,
+                        correct: true,
+                      })
+                    }
+                    className="flex items-center gap-2 bg-green-100 hover:bg-green-200 text-green-800 font-medium py-2 px-4 rounded-lg border border-green-200 transition-colors"
+                  >
+                    <FiCheck className="text-green-600" /> Sí, es correcta
+                  </button>
+
+                  <button
+                    onClick={() => setShowCorrection(true)}
+                    className="flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-lg border border-red-200 transition-colors"
+                  >
+                    <FiX className="text-red-600" /> No, es incorrecta
+                  </button>
+                </div>
+
+                {showCorrection && (
+                  <div className="mt-4 space-y-4">
+                    <select
+                      onChange={(e) => setSelectedCorrectCategory(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    >
+                      <option value="">Selecciona la categoría correcta</option>
+                      <option value="plastic">Plástico</option>
+                      <option value="glass">Vidrio</option>
+                      <option value="metal">Metal</option>
+                      <option value="paper">Papel</option>
+                      <option value="organic">Orgánico</option>
+                      <option value="trash">Basura</option>
+                      <option value="electronic">Electrónico</option>
+                      <option value="tetrapak">Tetrapak</option>
+                      <option value="cardboard">Cartón</option>
+                      <option value="battery">Batería</option>
+                    </select>
+
+                    <button
+                      onClick={() =>
+                        sendFeedback({
+                          imageUrl: preview,
+                          predictedClass: prediction,
+                          correct: false,
+                          correctedLabel: selectedCorrectCategory,
+                        })
+                      }
+                      disabled={!selectedCorrectCategory}
+                      className={`w-full py-3 px-4 rounded-lg font-medium text-white flex items-center justify-center gap-2 ${
+                        selectedCorrectCategory
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "bg-gray-300 cursor-not-allowed"
+                      }`}
+                    >
+                      <FiSend /> Enviar Corrección
+                    </button>
+                  </div>
+                )}
+
+                {feedbackSent !== null && (
+                  <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
+                    feedbackSent 
+                      ? "bg-green-100 text-green-800 border border-green-200" 
+                      : "bg-red-100 text-red-800 border border-red-200"
+                  }`}>
+                    {feedbackSent
+                      ? "✅ ¡Gracias por tu retroalimentación! La página se actualizará en breve."
+                      : "❌ Error al enviar el feedback. Por favor intenta nuevamente."}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
