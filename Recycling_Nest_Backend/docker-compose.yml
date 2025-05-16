@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME=reciclaje_app_DB}
+      POSTGRES_DB: ${DB_NAME}
     container_name: reciclaje-app
     volumes:
       - ./postgres:/var/lib/postgresql/data
