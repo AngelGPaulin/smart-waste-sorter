@@ -29,11 +29,7 @@ import {
       return this.service.findAll();
     }
 
-    @Public()
-    @Get(':id')
-    findOne(@Param('id', ParseIntPipe) id: string): Promise<Feedback> {
-      return this.service.findOne(id);
-    }
+
 
     @Public()
     @Put(':id')
@@ -49,5 +45,16 @@ import {
     remove(@Param('id', ParseIntPipe) id: string): Promise<void> {
       return this.service.remove(id);
     }
+    @Public()
+    @Get('latest')
+    findLatest(): Promise<Feedback | null> {
+      return this.service.findLatest();
+    }
+    @Public()
+    @Get(':id')
+    findOne(@Param('id', ParseIntPipe) id: string): Promise<Feedback> {
+      return this.service.findOne(id);
+    }
+
   }
   

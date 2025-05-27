@@ -5,6 +5,7 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { FiArrowLeft } from "react-icons/fi";
+import { API_URL } from "@/constants";
 
 export default function PredictPage() {
   const [image, setImage] = useState<File | null>(null);
@@ -77,7 +78,6 @@ export default function PredictPage() {
       0.95
     ); // Calidad del 95%
   };
-
   const classifyImage = async () => {
     if (!image) {
       alert("Por favor, captura o sube una imagen primero");
@@ -92,7 +92,15 @@ export default function PredictPage() {
         "http://localhost:5000/predict/gpt",
         formData
       );
-      setPrediction(res.data.prediction);
+      const predictedValue = res.data.prediction;
+
+      // Guardar localmente si quieres
+      setPrediction(predictedValue);
+
+      // BroadcastChannel: emitir predicción
+      const bc = new BroadcastChannel("prediccion-channel");
+      bc.postMessage(predictedValue);
+      bc.close();
     } catch (err) {
       console.error("Error al clasificar:", err);
       alert("Error al clasificar la imagen");
@@ -101,17 +109,17 @@ export default function PredictPage() {
 
   const sendFeedback = async (correct: boolean) => {
     try {
-      await axios.post("http://localhost:4000/feedback", {
+      await axios.post(`${API_URL}/feedback`, {
         imageUrl: preview,
         predictedClass: prediction,
         isCorrect: correct,
         correctedLabel: correct ? undefined : selectedCorrectCategory,
       });
-      alert("✅ Feedback enviado");
+      alert("Feedback enviado");
       resetForm();
     } catch (err) {
       console.error(err);
-      alert("❌ Error al enviar feedback");
+      alert("Error al enviar feedback");
     }
   };
 
@@ -125,7 +133,6 @@ export default function PredictPage() {
 
   return (
     <div className="h-screen bg-white flex flex-col">
-      {/* Header */}
       <header className="bg-white p-4 shadow-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link
@@ -136,16 +143,14 @@ export default function PredictPage() {
             Volver
           </Link>
           <h1 className="text-xl font-bold text-green-700">
-            ♻️ Clasificador Ecológico
+            Clasificador Ecológico
           </h1>
           <div className="w-8"></div>
         </div>
       </header>
 
-      {/* Contenido principal */}
       <main className="flex-1 overflow-hidden p-4 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-          {/* Columna izquierda - Cámara */}
           <div className="flex flex-col h-full">
             <div className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-100 flex-1 flex flex-col">
               <h2 className="text-lg font-semibold text-green-700 mb-3">
@@ -184,7 +189,6 @@ export default function PredictPage() {
             </div>
           </div>
 
-          {/* Columna derecha - Vista previa */}
           <div className="flex flex-col h-full">
             <div className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-100 flex-1 flex flex-col">
               {!preview ? (
@@ -218,7 +222,6 @@ export default function PredictPage() {
               )}
             </div>
 
-            {/* Sección de resultados */}
             {prediction && (
               <div className="mt-4 bg-green-50 p-4 rounded-lg shadow-sm border border-green-100">
                 <div className="mb-4">
@@ -245,13 +248,13 @@ export default function PredictPage() {
                       onClick={() => sendFeedback(true)}
                       className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg shadow transition flex-1"
                     >
-                      ✅ Sí
+                      Sí
                     </button>
                     <button
                       onClick={() => setShowCorrection(true)}
                       className="bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded-lg shadow transition flex-1"
                     >
-                      ❌ No
+                      No
                     </button>
                   </div>
                 </div>
@@ -266,7 +269,7 @@ export default function PredictPage() {
                       onChange={(e) =>
                         setSelectedCorrectCategory(e.target.value)
                       }
-                      className="w-full p-2 border-2 border-green-300 rounded-lg mb-3"
+                      className="w-full p-2 border-2 border-green-300 rounded-lg mb-3 text-green-600"
                     >
                       <option value="">Selecciona la categoría correcta</option>
                       <option value="plastic">Plástico</option>

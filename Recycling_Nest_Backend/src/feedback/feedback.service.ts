@@ -43,5 +43,13 @@ export class FeedbackService {
     const feedback = await this.findOne(id);
     await this.repo.remove(feedback);
   }
+  async findLatest(): Promise<Feedback | null> {
+  return this.repo.findOne({
+    where: {},
+    order: { createdAt: 'DESC' },
+  });
+
+}
+
   
 }

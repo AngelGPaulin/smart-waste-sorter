@@ -17,10 +17,13 @@ async function bootstrap() {
   app.useGlobalGuards(new JwtAuthGuard(reflector));
 
   app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
-    Credentials: true,
+    origin: [
+      'http://localhost:3000',
+      process.env.HTTPS_URL
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
   });
 
   const config = new DocumentBuilder()
@@ -34,7 +37,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  console.log(`🚀 App corriendo en http://localhost:${port}`);
+  console.log(`🚀 App corriendo en ${process.env.HTTPS_URL}:${port}`);
   console.log(`📘 Swagger disponible en http://localhost:${port}/api`);
 }
 bootstrap();

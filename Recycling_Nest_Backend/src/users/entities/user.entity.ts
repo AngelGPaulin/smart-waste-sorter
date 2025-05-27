@@ -11,12 +11,12 @@ export class User {
   @ApiProperty({ example: 'Juan Pérez' })
   name: string;
 
-  @Column('text')
+  @Column({ nullable: false, default: '' })
   @ApiProperty({ example: 'contraseña123' })
   password: string;
 
   @Column()
-  @ApiProperty({ example: 'juan@example.com' })
+  @ApiProperty({ example: 'juan@example.com' }) 
   email: string;
 
   @Column({ default: 0 })

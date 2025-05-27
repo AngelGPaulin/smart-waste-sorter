@@ -4,7 +4,7 @@ import { TOKEN_NAME } from "./constants";
 export function middleware(request: NextRequest) {
   const token = request.cookies.get(TOKEN_NAME)?.value;
 
-  const publicRoutes = ["/login", "/register"]; // Agrega aquí las rutas públicas
+  const publicRoutes = ["/login", "/signup"]; // Agrega aquí las rutas públicas
   const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
 
   if (!token && !isPublicRoute) {
@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (token && isPublicRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/dashboard/home", request.url));
   }
 
   return NextResponse.next();

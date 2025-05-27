@@ -32,11 +32,12 @@ export default function SignupPage() {
   };
 
   const handleSubmit = async () => {
-    console.log("DATA A ENVIAR", form);
-    await api.post("/auth/register", form);
-
     try {
-      await api.post("/auth/register", form);
+      console.log("DATA A ENVIAR", form);
+      await api.post("/auth/register", form, {
+        withCredentials: true,
+      });
+
       alert("Usuario creado con éxito. Inicia sesión.");
       router.push("/login");
     } catch (err) {
